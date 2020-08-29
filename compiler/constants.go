@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package main
+package compiler
 
 import (
 	"fmt"
@@ -89,7 +89,7 @@ func sanityCheckLabels(labels []Label) {
 	}
 }
 
-func defineTable(constants []string, tableName string) Table {
+func defineTable(constants []string, tableName string, target string) Table {
 
 	labels := []Label{}
 	bytes := make([]byte, 0, 1000)
@@ -144,8 +144,8 @@ func defineTable(constants []string, tableName string) Table {
 			}
 			align := 1 << uint(bits)
 			if strings.Contains(line, ".align") &&
-				(strings.Contains(strings.ToLower(*targetFlag), "x86") ||
-					strings.Contains(strings.ToLower(*targetFlag), "amd64")) {
+				(strings.Contains(strings.ToLower(target), "x86") ||
+					strings.Contains(strings.ToLower(target), "amd64")) {
 				// For historic reasons, the behavior of .align differs between
 				// architectures. The llvm for x86 alignment is in bytes.
 				// https://reviews.llvm.org/D16549
@@ -210,35 +210,6 @@ type Const struct {
 	start, end int
 }
 
-func segmentConstTables(lines []string) []Table {
-
-	consts := []Const{}
-
-	globals := splitOnGlobals(lines)
-
-	if len(globals) == 0 {
-		return []Table{}
-	}
-
-	splitBegin := 0
-	for _, global := range globals {
-		start := getFirstLabelConstants(lines[splitBegin:global.dotGlobalLine])
-		if start != -1 {
-			// Add set of lines when a constant table has been found
-			consts = append(consts, Const{name: fmt.Sprintf("LCDATA%d", len(consts)+1), start: splitBegin + start, end: global.dotGlobalLine})
-		}
-		splitBegin = global.dotGlobalLine + 1
-	}
-
-	tables := []Table{}
-
-	for _, c := range consts {
-
-		tables = append(tables, defineTable(lines[c.start:c.end], c.name))
-	}
-
-	return tables
-}
 
 func getCorrespondingTable(lines []string, tables []Table) Table {
 
