@@ -19,19 +19,20 @@ package main
 import (
 	"flag"
 	"fmt"
+	"github.com/wowngasb/c2goasm/asm2plan9s"
+	"github.com/wowngasb/c2goasm/compiler"
 	"log"
 	"os"
 	"os/exec"
 	"strings"
-	"github.com/wowngasb/c2goasm/compiler"
 )
 
 var (
-	assembleFlag = flag.Bool("a", false, "Immediately invoke asm2plan9s")
+	assembleFlag = flag.Bool("a", true, "Immediately invoke asm2plan9s")
 	stripFlag    = flag.Bool("s", false, "Strip comments")
 	compactFlag  = flag.Bool("c", false, "Compact byte codes")
 	formatFlag   = flag.Bool("f", false, "Format using asmfmt")
-	targetFlag   = flag.String("t", "x86", "Target machine of input code")
+	targetFlag   = flag.String("t", "amd64", "Target machine of input code")
 )
 
 func main() {
@@ -55,10 +56,6 @@ func main() {
 	}
 
 	cfg := &compiler.Config{
-		AssembleFlag: *assembleFlag,
-		StripFlag: *stripFlag,
-		CompactFlag: *compactFlag,
-		FormatFlag: *formatFlag,
 		TargetFlag: *targetFlag,
 	}
 
@@ -81,11 +78,7 @@ func main() {
 
 	if *assembleFlag {
 		fmt.Println("Invoking asm2plan9s on", assemblyFile)
-		cmd := exec.Command("asm2plan9s", assemblyFile)
-		_, err := cmd.CombinedOutput()
-		if err != nil {
-			log.Fatalf("asm2plan9s: %v", err)
-		}
+		asm2plan9s.Asm2plan9s(assemblyFile)
 	}
 
 	if *stripFlag {

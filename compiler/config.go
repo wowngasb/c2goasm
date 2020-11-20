@@ -9,10 +9,6 @@ import (
 )
 
 type Config struct {
-	AssembleFlag bool
-	StripFlag    bool
-	CompactFlag  bool
-	FormatFlag   bool
 	TargetFlag   string
 }
 
